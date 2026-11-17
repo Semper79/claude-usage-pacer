@@ -104,6 +104,22 @@ A window with no data shows as 0% (for instance before the first reply, or when 
 window is active). `/budget simulate` fakes a reading so you can see every color and alert.
 Everything you set is stored by the mod and survives across sessions.
 
+## Settings
+
+There are two places to configure the mod, and they work together:
+
+- **The plugin's settings page** in the app (or the plugin's configuration in the terminal):
+  the cap, the far-ahead threshold, a switch for each place the signal shows (session title,
+  strip, bar above the prompt, status line), the color mode (pace or ranges) and one color
+  for each pace level, picked from a list.
+- **The `/budget` panel**, which has all of that and also the **usage ranges** (add, move,
+  recolor, remove) and any custom `#rrggbb` color, through `/budget range` and `/budget color`.
+
+A value you set on the settings page applies as soon as you change it. What you set later in
+the panel or with `/budget` is kept until you change that same option on the settings page
+again; the settings page does not show values changed from the panel, so treat the panel as
+the more detailed view and the settings page as the quick one.
+
 ## The `/budget` command
 
 `/budget` opens the panel: cap, threshold, a switch per position, and the colors, picked

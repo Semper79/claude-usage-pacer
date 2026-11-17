@@ -18,11 +18,13 @@ import {
   DEFAULT_RANGES,
   DEFAULT_SETTINGS,
   LEVEL_ALIASES,
+  OPTION_DEFAULTS,
   LEVEL_NAME,
   PACE_LABEL,
   POSITIONS,
   POSITION_WORDS,
   PRESETS,
+  cleanOptions,
   clampSettings,
   colorName,
   colorOf,
@@ -34,6 +36,7 @@ import {
   duration,
   isVeryOver,
   moveRange,
+  optionChanges,
   parseColor,
   pct,
   positionsReport,
@@ -41,6 +44,7 @@ import {
   removeRange,
   report,
   setRange,
+  settingsWithOptions,
   signed,
   stripBadge,
   titleBadge,
@@ -269,7 +273,27 @@ function percentOptions(current: number) {
     : [{ value: String(current), label: `${current}%` }, ...PERCENT_OPTIONS]
 }
 
-export const register: Register = on => {
+/**
+ * The plugin's options (the manifest's `userConfig`, set in the app's plugin settings) become
+ * settings when they change. What was applied last is kept in the store: an option that differs
+ * from it was changed on the settings page since, so it is applied and the rest left alone. On
+ * the first run nothing was applied yet, so only an option that differs from its default counts.
+ */
+async function applyOptions($: Dollar, raw: unknown) {
+  const options = cleanOptions(raw)
+  const applied = await $.store.get('appliedOptions')
+  const baseline = applied === undefined ? cleanOptions(OPTION_DEFAULTS) : cleanOptions(applied)
+  const changed = optionChanges(options, baseline)
+
+  if (changed.length > 0) {
+    const next = settingsWithOptions(await read($, settingsAtom), options, changed)
+    await update($, settingsAtom, () => next)
+    await $.store.set('settings', next)
+  }
+  await $.store.set('appliedOptions', options)
+}
+
+export const register: Register = (on, options) => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
       name: 'budget',
@@ -282,6 +306,7 @@ export const register: Register = on => {
     // Settings and the last known reading, from earlier sessions.
     const stored = await $.store.get('settings')
     await update($, settingsAtom, () => clampSettings(stored))
+    await applyOptions($, options)
     const old = (await $.store.get('snap')) as BudgetSnapshot | undefined
 
     if (old !== undefined && Array.isArray(old.limits)) {

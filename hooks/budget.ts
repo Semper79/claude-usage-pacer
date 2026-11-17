@@ -257,6 +257,88 @@ export function clampSettings(raw: unknown): BudgetSettings {
   }
 }
 
+// --- Plugin options (the manifest's `userConfig`, shown in the app's plugin settings) --------
+// The settings page sets the mod's main settings through these. A value set there applies when
+// it changes; what the panel or `/budget` set later is kept until the page changes that option.
+
+/** The options and their defaults. Keep in step with `userConfig` in `.claude-plugin/plugin.json`. */
+export const OPTION_DEFAULTS = {
+  cap: 90,
+  threshold: 15,
+  title: true,
+  strip: false,
+  promptBar: true,
+  statusLine: true,
+  colorMode: 'pace',
+  colorOk: 'green',
+  colorOver1: 'yellow',
+  colorOver2: 'amber',
+  colorOver3: 'orange',
+  colorOver4: 'dark-orange',
+  colorCap: 'red',
+} as const
+
+export type OptionKey = keyof typeof OPTION_DEFAULTS
+export type OptionValues = { [K in OptionKey]: (typeof OPTION_DEFAULTS)[K] extends boolean ? boolean : (typeof OPTION_DEFAULTS)[K] extends number ? number : string }
+
+/** Which pace level each color option sets. */
+const COLOR_OPTIONS: Record<string, BudgetColorLevel> = {
+  colorOk: 'ok',
+  colorOver1: 'over1',
+  colorOver2: 'over2',
+  colorOver3: 'over3',
+  colorOver4: 'over4',
+  colorCap: 'cap',
+}
+
+/** The options as they are: each one of its own type, or its default when missing or wrong. */
+export function cleanOptions(raw: unknown): OptionValues {
+  const given = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<string, unknown>
+  const out: Record<string, string | number | boolean> = {}
+
+  for (const key of Object.keys(OPTION_DEFAULTS) as OptionKey[]) {
+    const fallback = OPTION_DEFAULTS[key]
+    const value = given[key]
+    out[key] = typeof value === typeof fallback && (typeof value !== 'number' || Number.isFinite(value)) ? (value as string | number | boolean) : fallback
+  }
+
+  return out as OptionValues
+}
+
+/** The options whose value differs from the baseline (what was applied last, or the defaults). */
+export function optionChanges(options: OptionValues, baseline: OptionValues): OptionKey[] {
+  return (Object.keys(OPTION_DEFAULTS) as OptionKey[]).filter(key => options[key] !== baseline[key])
+}
+
+/** The settings with the changed options applied; the rest stays as it is. */
+export function settingsWithOptions(settings: BudgetSettings, options: OptionValues, keys: readonly OptionKey[]): BudgetSettings {
+  const next: BudgetSettings = { ...settings, colors: { ...settings.colors } }
+
+  for (const key of keys) {
+    const level = COLOR_OPTIONS[key]
+
+    if (level !== undefined) {
+      next.colors[level] = parseColor(String(options[key])) ?? settings.colors[level]
+    } else if (key === 'cap') {
+      next.cap = options.cap
+    } else if (key === 'threshold') {
+      next.alertDelta = options.threshold
+    } else if (key === 'title') {
+      next.title = options.title
+    } else if (key === 'strip') {
+      next.theme = options.strip
+    } else if (key === 'promptBar') {
+      next.band = options.promptBar
+    } else if (key === 'statusLine') {
+      next.status = options.statusLine
+    } else if (key === 'colorMode') {
+      next.mode = options.colorMode === 'ranges' ? 'ranges' : 'pace'
+    }
+  }
+
+  return clampSettings(next)
+}
+
 /** Sets the range starting at `from` (adding it, or recoloring it). */
 export function setRange(ranges: readonly BudgetRange[], from: number, color: string): BudgetRange[] {
   return cleanRanges([...ranges.filter(r => r.from !== from), { from, color }])

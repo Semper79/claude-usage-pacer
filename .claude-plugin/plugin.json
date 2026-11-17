@@ -1,11 +1,102 @@
 {
   "name": "usage-pacer",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Pace your Claude usage so you never run out of limits. Tracks the 5-hour (5h) and weekly (1w) windows against a linear budget toward a cap you set (default 90%): a colored bar above the prompt, a badge in the session title and a status-line entry go green on pace and yellow, orange, red as you run ahead, with a warning before the cap. Everything is configured with /budget.",
   "author": { "name": "Semper79" },
   "license": "MIT",
   "homepage": "https://github.com/semper79/claude-usage-pacer",
   "repository": "https://github.com/semper79/claude-usage-pacer",
   "keywords": ["usage", "rate-limit", "pace", "budget", "status", "mod"],
+  "userConfig": {
+    "cap": {
+      "type": "number",
+      "title": "Cap (%)",
+      "description": "The usage at which the signal turns red and the alert fires. The linear budget is the elapsed share of each window times this cap.",
+      "default": 90,
+      "min": 1,
+      "max": 100
+    },
+    "threshold": {
+      "type": "number",
+      "title": "Far-ahead threshold (points)",
+      "description": "How many points over the linear budget count as far ahead of pace. The levels slightly over, over, well over and far over are thirds of it.",
+      "default": 15,
+      "min": 1,
+      "max": 50
+    },
+    "title": {
+      "type": "boolean",
+      "title": "Badge in the session title",
+      "description": "Put the 5h and 1w usage in front of the session title. It updates when a session starts and on each prompt you send.",
+      "default": true
+    },
+    "strip": {
+      "type": "boolean",
+      "title": "Strip below the title",
+      "description": "Draw a colored 5h and 1w strip as the window backdrop (desktop and mobile apps). The app's own colors never change.",
+      "default": false
+    },
+    "promptBar": {
+      "type": "boolean",
+      "title": "Bar above the prompt",
+      "description": "Show the 5h and 1w bars above the prompt, with the pace and the reset time.",
+      "default": true
+    },
+    "statusLine": {
+      "type": "boolean",
+      "title": "Status line entry",
+      "description": "Show the 5h and 1w usage in the status line.",
+      "default": true
+    },
+    "colorMode": {
+      "type": "string",
+      "title": "Color by",
+      "description": "pace: the color follows how far ahead of the linear budget you are. ranges: the color follows the usage reached, in the ranges you set with the /budget panel.",
+      "default": "pace",
+      "options": ["pace", "ranges"]
+    },
+    "colorOk": {
+      "type": "string",
+      "title": "Color: on pace",
+      "description": "Usage at or under the linear budget.",
+      "default": "green",
+      "options": ["green", "light-green", "teal", "sky", "blue", "purple", "pink", "yellow", "amber", "orange", "dark-orange", "red", "dark-red", "gray"]
+    },
+    "colorOver1": {
+      "type": "string",
+      "title": "Color: slightly over",
+      "description": "Just over the linear budget.",
+      "default": "yellow",
+      "options": ["green", "light-green", "teal", "sky", "blue", "purple", "pink", "yellow", "amber", "orange", "dark-orange", "red", "dark-red", "gray"]
+    },
+    "colorOver2": {
+      "type": "string",
+      "title": "Color: over pace",
+      "description": "Over the linear budget by a third of the threshold.",
+      "default": "amber",
+      "options": ["green", "light-green", "teal", "sky", "blue", "purple", "pink", "yellow", "amber", "orange", "dark-orange", "red", "dark-red", "gray"]
+    },
+    "colorOver3": {
+      "type": "string",
+      "title": "Color: well over",
+      "description": "Over the linear budget by two thirds of the threshold.",
+      "default": "orange",
+      "options": ["green", "light-green", "teal", "sky", "blue", "purple", "pink", "yellow", "amber", "orange", "dark-orange", "red", "dark-red", "gray"]
+    },
+    "colorOver4": {
+      "type": "string",
+      "title": "Color: far over",
+      "description": "Over the linear budget by the whole threshold or more.",
+      "default": "dark-orange",
+      "options": ["green", "light-green", "teal", "sky", "blue", "purple", "pink", "yellow", "amber", "orange", "dark-orange", "red", "dark-red", "gray"]
+    },
+    "colorCap": {
+      "type": "string",
+      "title": "Color: at the cap",
+      "description": "Usage at or past the cap.",
+      "default": "red",
+      "options": ["green", "light-green", "teal", "sky", "blue", "purple", "pink", "yellow", "amber", "orange", "dark-orange", "red", "dark-red", "gray"]
+    }
+  },
   "types": "./types/index.d.ts"
 }
