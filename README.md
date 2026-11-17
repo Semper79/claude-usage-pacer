@@ -4,6 +4,17 @@ A Claude Code mod (desktop app and terminal) that keeps Claude usage on a **line
 toward a configurable **cap**, for the 5-hour window (**5h**) and the weekly one (**1w**),
 so you don't run out of limits before the reset.
 
+Claude's limits reset on a clock: a 5-hour window and a weekly one. Looking at a single
+percentage doesn't tell you whether you are using Claude too fast. This mod does: it compares
+the usage so far with where a steady, even pace would be at this moment, shows both windows
+at a glance, and colors them green while you are on pace and yellow, orange and red as you
+run ahead of it, so you can slow down before you reach the cap.
+
+```
+5h 12%         ● on pace         reset 15:30 (2h30m)      1w 41%      ● slightly over      reset Sat 21 Nov 01:00 (3d12h)
+██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░      ████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+```
+
 ## Install
 
 In a Claude Code terminal session:
@@ -57,6 +68,41 @@ own plugins, so the repository carries that name and the plugin does not.
   - **Status line**: `5h 92% · 1w 50% / budget 45% · reset 3d 12h`.
 - **Alerts**: a toast when the cap is reached or usage runs far ahead of pace, and a
   reminder when you send a prompt (at most every 10 minutes) while it stays there.
+
+## How it works
+
+1. **It reads your limits.** Claude Code reports the state of each rate-limit window: how
+   much of it is used (`percentUsed`) and when it resets (`resetsAt`). The mod reads them
+   once at the start of a session and again whenever the engine reports that a window moved
+   by a whole point. The last reading is kept, so it is still there when you open the next
+   session. These windows exist only with a Claude subscription, after the first model reply.
+2. **It works out where you should be.** A window of length `L` that resets at time `R`
+   started at `R − L` (`L` is 5 hours for 5h and 7 days for 1w). At time `t`, the share
+   elapsed is `(t − (R − L)) / L`, and the **expected usage** is that share × your cap. So
+   with a 90% cap, halfway through the week you are expected to have used 45%.
+3. **It compares.** The distance is `used − expected`, in percentage points. At or under the
+   budget you are **on pace**. Over it, the distance is cut into thirds of the "far ahead"
+   threshold (default 15 points): under 5 points is *slightly over*, 5 to 10 is *over
+   pace*, 10 to 15 is *well over*, from 15 on *far over*. Reaching the cap itself is *at
+   cap*. Both windows are judged the same way, each against its own clock.
+4. **It colors.** In **pace** mode each level has its own color: green on pace, then
+   yellow, orange and red. In **ranges** mode the color depends only on the usage reached
+   (for example green below 50%, red from 85%), whatever the pace. You pick the colors and
+   the ranges.
+5. **It shows it where you choose.** Each place can be switched on or off:
+   - the **bar above the prompt**: a colored bar per window with its usage on the left, the
+     pace in the middle and the reset time on the right, in your local time zone;
+   - the **title bar**: a `🔴 5h 92% · 🟢 1w 50% │ title` badge in front of the session title,
+     refreshed at the start of the session and on every prompt you send;
+   - the optional **strip below the title**, drawn as the window backdrop with no glass, so
+     the app's own colors never change;
+   - the **status line**.
+6. **It warns you.** A toast appears when you reach the cap or go far ahead of pace, and a
+   reminder when you send a prompt while you are still there, at most every ten minutes.
+
+A window with no data shows as 0% (for instance before the first reply, or when no 5-hour
+window is active). `/budget simulate` fakes a reading so you can see every color and alert.
+Everything you set is stored by the mod and survives across sessions.
 
 ## The `/budget` command
 

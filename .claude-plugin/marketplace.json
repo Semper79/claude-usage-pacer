@@ -6,7 +6,7 @@
     {
       "name": "usage-pacer",
       "source": "./",
-      "description": "Keeps Claude usage (5h and 1w windows) on a linear pace toward a configurable cap, with a colored signal in the title bar, prompt bar and status line, and alerts."
+      "description": "Pace your Claude usage so you never run out of limits. Tracks the 5-hour (5h) and weekly (1w) windows against a linear budget toward a cap you set (default 90%): a colored bar above the prompt, a badge in the session title and a status-line entry go green on pace and yellow, orange, red as you run ahead, with a warning before the cap. Everything is configured with /budget."
     }
   ]
 }
