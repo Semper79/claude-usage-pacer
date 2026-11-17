@@ -1,0 +1,11 @@
+{
+  "name": "usage-pacer",
+  "version": "1.0.0",
+  "description": "Keeps Claude usage (5h and 1w windows) on a linear pace toward a configurable cap, with a colored signal in the title bar, prompt bar and status line, and alerts.",
+  "author": { "name": "Semper79" },
+  "license": "MIT",
+  "homepage": "https://github.com/semper79/claude-usage-pacer",
+  "repository": "https://github.com/semper79/claude-usage-pacer",
+  "keywords": ["usage", "rate-limit", "pace", "budget", "status", "mod"],
+  "types": "./types/index.d.ts"
+}

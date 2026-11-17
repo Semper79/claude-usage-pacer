@@ -1,0 +1,12 @@
+{
+  "name": "semper79-plugins",
+  "owner": { "name": "Semper79" },
+  "metadata": { "description": "Claude Code mods by Semper79." },
+  "plugins": [
+    {
+      "name": "usage-pacer",
+      "source": "./",
+      "description": "Keeps Claude usage (5h and 1w windows) on a linear pace toward a configurable cap, with a colored signal in the title bar, prompt bar and status line, and alerts."
+    }
+  ]
+}
