@@ -138,11 +138,17 @@ test('title badge: dots from the chosen colors, original title kept', async () =
   // With ranges: 60% is yellow, 40% green.
   expect(titleBadge(compute(snap(40, RESET, 60), NOW, RANGES), RANGES)).toBe('🟡 5h 60% · 🟢 1w 40%')
   const titled = withBadge('Usage monitor', badge)
-  expect(titled).toBe('🔴 5h 92% · 🟢 1w 40% │ Usage monitor')
-  expect(withBadge(titled, '🟢 5h 10% · 🟢 1w 41%')).toBe('🟢 5h 10% · 🟢 1w 41% │ Usage monitor')
+  // The badge goes at the end, so the sidebar's right-hand cut hides it and titles line up.
+  expect(titled).toBe('Usage monitor │ 🔴 5h 92% · 🟢 1w 40%')
+  expect(withBadge(titled, '🟢 5h 10% · 🟢 1w 41%')).toBe('Usage monitor │ 🟢 5h 10% · 🟢 1w 41%')
   expect(stripBadge(titled)).toBe('Usage monitor')
-  // A badge from the Italian version is recognized too.
+  // A title that was only a badge is no title.
+  expect(stripBadge('🔴 5h 92% · 🟢 1w 40%')).toBe('')
+  // A badge in front, as older versions put it, is recognized and taken off.
   expect(stripBadge('🔴 5h 92% · ⚪ 1w n/d │ Monitoraggio')).toBe('Monitoraggio')
+  expect(withBadge('🔴 5h 92% · ⚪ 1w n/d │ Monitoraggio', '🟢 5h 1% · 🟢 1w 2%')).toBe('Monitoraggio │ 🟢 5h 1% · 🟢 1w 2%')
+  // A "│" the user typed in a title is not mistaken for a badge.
+  expect(stripBadge('Plan │ phase 2')).toBe('Plan │ phase 2')
   expect(titleBadge(compute(null, NOW, DEFAULT_SETTINGS), DEFAULT_SETTINGS)).toBe('🟢 5h 0% · 🟢 1w 0%')
 })
 
@@ -252,7 +258,7 @@ test('no data: 0% in the prompt bar, the strip and the title, with no reset show
   await ui.unmount()
   expect(await topSvg($)).toContain('1w  0%')
   const r = await $.classic.UserPromptSubmit({ prompt: 'hi', session_title: 'Usage monitor' })
-  expect(r.sessionTitle).toBe('🟢 5h 0% · 🟢 1w 0% │ Usage monitor')
+  expect(r.sessionTitle).toBe('Usage monitor │ 🟢 5h 0% · 🟢 1w 0%')
 })
 
 test('at the cap: a toast', async ($, on) => {
@@ -289,7 +295,7 @@ test('/budget mode ranges and /budget range: colors by usage', async ($, on) => 
   await $.command.run(run('range remove 30'))
   expect(await topSvg($)).not.toContain('#7a4fa0')
   const r = await $.classic.UserPromptSubmit({ prompt: 'hi', session_title: 'Usage monitor' })
-  expect(r.sessionTitle).toBe('🟡 5h 60% · 🟢 1w 40% │ Usage monitor')
+  expect(r.sessionTitle).toBe('Usage monitor │ 🟡 5h 60% · 🟢 1w 40%')
 })
 
 test('/budget strip off removes the backdrop', async ($, on) => {
@@ -318,7 +324,7 @@ test('the session title gets the badge on each prompt; title off removes it', as
   engine(on, 40, 92)
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
   const r = await $.classic.UserPromptSubmit({ prompt: 'hi', session_title: 'Usage monitor' })
-  expect(r.sessionTitle).toBe('🔴 5h 92% · 🟢 1w 40% │ Usage monitor')
+  expect(r.sessionTitle).toBe('Usage monitor │ 🔴 5h 92% · 🟢 1w 40%')
   expect((await $.classic.UserPromptSubmit({ prompt: 'hi' })).sessionTitle).toBe(undefined)
   await $.command.run(run('title off'))
   const off = await $.classic.UserPromptSubmit({ prompt: 'hi', session_title: r.sessionTitle })

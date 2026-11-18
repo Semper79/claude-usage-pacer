@@ -723,21 +723,29 @@ export function titleBadge(s: Status, settings: BudgetSettings): string {
   return `${one('5h')} · ${one('1w')}`
 }
 
-const BADGE = /^\S+ 5h \S+ · \S+ 1w \S+ │ /u
-const BADGE_ONLY = /^\S+ 5h \S+ · \S+ 1w \S+$/u
+const BADGE_TEXT = String.raw`\S+ 5h \S+ · \S+ 1w \S+`
+// The badge sits at the end of the title. Older versions put it in front, so both are
+// recognized and taken off, and a title that was only a badge is no title.
+const BADGE_AT_END = new RegExp(String.raw`\s*│ ${BADGE_TEXT}$`, 'u')
+const BADGE_IN_FRONT = new RegExp(String.raw`^${BADGE_TEXT} │ `, 'u')
+const BADGE_ONLY = new RegExp(String.raw`^${BADGE_TEXT}$`, 'u')
 
-/** The title without the badge the mod put in front of it. */
+/** The title without the badge the mod put on it, at the end or (older versions) in front. */
 export function stripBadge(title: string | undefined): string {
-  if (title === undefined) {
+  if (title === undefined || BADGE_ONLY.test(title)) {
     return ''
   }
 
-  return BADGE_ONLY.test(title) ? '' : title.replace(BADGE, '')
+  return title.replace(BADGE_AT_END, '').replace(BADGE_IN_FRONT, '')
 }
 
-/** The title with the badge in front; with no title, the badge alone. */
+/**
+ * The title with the badge at its end: `Title │ 🟢 5h 2% · 🟢 1w 2%`. At the end, the sidebar
+ * (which cuts long titles on the right) mostly hides it and keeps the titles lined up, while
+ * the title bar shows it whole. With no title, the badge alone.
+ */
 export function withBadge(title: string | undefined, badge: string): string {
   const base = stripBadge(title)
 
-  return base === '' ? badge : `${badge}${SEP}${base}`
+  return base === '' ? badge : `${base}${SEP}${badge}`
 }

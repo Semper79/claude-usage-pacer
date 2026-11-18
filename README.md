@@ -53,10 +53,13 @@ own plugins, so the repository carries that name and the plugin does not.
   - **ranges**: by usage alone, e.g. 0–50% green, 50–70% yellow, 70–85% orange, 85%+ red.
     Ranges can be added, moved, recolored and removed.
 - **Where the signal shows** (each one on/off):
-  - **Title bar**: the session title becomes `🔴 5h 92% · 🟢 1w 50% │ <title>`, with emoji
+  - **Title bar**: the session title becomes `<title> │ 🔴 5h 92% · 🟢 1w 50%`, with emoji
     dots nearest the chosen colors. It updates at start and on each prompt sent (it is the
     session title, which the SessionStart/UserPromptSubmit hooks can set); the original
-    title stays after the badge.
+    title stays in front. The badge goes at the end because the session list cuts long
+    titles on the right: it mostly stays out of the list and the titles stay lined up, while
+    the title bar shows it whole. The title is one text, so a mod cannot show it in the
+    title bar alone; switch it off with `/budget title off` if you don't want it in the list.
   - **Strip below the title** (off by default, desktop/mobile): two colored 5h | 1w
     sections, drawn as the window backdrop with no glass, so the app's colors never change.
   - **Bar above the prompt**, kept minimal: 5h and 1w side by side, each a full-width colored
@@ -92,7 +95,7 @@ own plugins, so the repository carries that name and the plugin does not.
 5. **It shows it where you choose.** Each place can be switched on or off:
    - the **bar above the prompt**: a colored bar per window with its usage on the left, the
      pace in the middle and the reset time on the right, in your local time zone;
-   - the **title bar**: a `🔴 5h 92% · 🟢 1w 50% │ title` badge in front of the session title,
+   - the **title bar**: a `title │ 🔴 5h 92% · 🟢 1w 50%` badge at the end of the session title,
      refreshed at the start of the session and on every prompt you send;
    - the optional **strip below the title**, drawn as the window backdrop with no glass, so
      the app's own colors never change;
